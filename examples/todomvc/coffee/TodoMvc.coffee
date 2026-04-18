@@ -47,112 +47,90 @@ export $ = new TodoStore
 
 # Components
 
-class Input extends Component
-  updateField: (input) ->
-    $.input = input
-
-  add: ->
-    entry = new Entry(description: $.input)
-    $.entries.push entry
+Input = Component ->
+  updateField = (input) -> $.input = input
+  add = ->
+    $.entries.push new Entry(description: $.input)
     $.input = ''
+  theme.apply (t) ->
+    t.newTodo
+      placeholder: 'What needs to be done?'
+      value: $.input
+      name: 'newTodo'
+      onInput: updateField
+      onEnter: add
 
-  render: ->
-    theme.apply (t) =>
-      t.newTodo
-        placeholder: 'What needs to be done?'
-        value: $.input
-        name: 'newTodo'
-        onInput: @updateField
-        onEnter: @add
-
-class EntryList extends Component
-  checkAll: ->
-    for entry in $.entries
-      entry.completed = true
-
-  _entry: (id) -> find($.entries, id: id)
-
-  check: (id) ->
-    entry = @_entry(id)
+EntryList = Component ->
+  _entry = (id) -> find($.entries, id: id)
+  checkAll = -> entry.completed = true for entry in $.entries
+  check = (id) ->
+    entry = _entry(id)
     entry.completed = not entry.completed
-
-  edit: (id, isEditing = true) ->
-    entry = @_entry(id)
+  edit = (id, isEditing = true) ->
+    entry = _entry(id)
     entry.editing = isEditing
+  update = (id, text) -> _entry(id).description = text
+  deleteEntry = (id) -> remove $.entries, (entry) -> entry.id is id
 
-  update: (id, text) ->
-    @_entry(id).description = text
+  theme.apply (t) ->
+    t.with('main', empty: isEmpty($.entries)) ->
+      t.toggle
+        name: 'toggle'
+        checked: every($.entries, 'completed')
+        onChange: checkAll
+      t.toggleLabel { for: 'toggle' }, 'Mark all as complete'
+      t.list ->
+        $.visibleEntries.forEach (entry) ->
+          t.with('task', pick(entry, 'editing')) ->
+            if entry.editing
+              t.taskEdit
+                value: entry.description
+                id: entry.id
+                onInput: (text) -> update(entry.id, text)
+                onBlur: -> edit(entry.id, false)
+                onEnter: -> edit(entry.id, false)
+            else
+              t.taskToggle
+                checked: entry.completed
+                onChange: -> check(entry.id)
+              t.with('entryLabel', pick(entry, 'completed'))
+                onDoubleClick: -> edit(entry.id)
+                entry.description
+              t.destroyBtn { onClick: -> deleteEntry(entry.id) }
 
-  delete: (id) ->
-    remove $.entries, (entry) -> entry.id is id
+Footer = Component ->
+  changeVisibility = (visibility) -> $.visibility = visibility
+  clear = -> remove($.entries, 'completed')
+  theme.apply (t) ->
+    unless isEmpty($.entries)
+      t.footer ->
+        t.counter $.entriesLeft
+        t.filters ->
+          ['All', 'Active', 'Completed'].forEach (visibility) ->
+            opts = { onClick: -> changeVisibility(visibility) }
+            current = visibility is $.visibility
+            t.with('filter', current: current) opts, visibility
+        completions = $.completedEntries.length
+        if completions > 0
+          t.clearBtn
+            onClick: clear
+            "Clear completed (#{completions})"
 
-  render: ->
-    theme.apply (t) =>
-      t.with('main', empty: isEmpty($.entries)) =>
-        t.toggle
-          name: 'toggle'
-          checked: every($.entries, 'completed')
-          onChange: @checkAll
-        t.toggleLabel { for: 'toggle' }, 'Mark all as complete'
-        t.list =>
-          $.visibleEntries.forEach (entry) =>
-            t.with('task', pick(entry, 'editing')) =>
-              if entry.editing
-                t.taskEdit
-                  value: entry.description
-                  id: entry.id
-                  onInput: (text) => @update(entry.id, text)
-                  onBlur: => @edit(entry.id, false)
-                  onEnter: => @edit(entry.id, false)
-              else
-                t.taskToggle
-                  checked: entry.completed
-                  onChange: => @check(entry.id)
-                t.with('entryLabel', pick(entry, 'completed'))
-                  onDoubleClick: => @edit(entry.id)
-                  entry.description
-                t.destroyBtn { onClick: => @delete(entry.id) }
-
-class Footer extends Component
-  changeVisibility: (visibility) ->
-    $.visibility = visibility
-
-  clear: ->
-    remove($.entries, 'completed')
-
-  render: ->
-    theme.apply (t) =>
-      unless isEmpty($.entries)
-        t.footer =>
-          t.counter $.entriesLeft
-          t.filters =>
-            ['All', 'Active', 'Completed'].forEach (visibility) =>
-              buttonOpts = { onClick: => @changeVisibility(visibility) }
-              current = (visibility is $.visibility)
-              t.with('filter', current: current) buttonOpts, visibility
-
-          completions = $.completedEntries.length
-          if completions > 0
-            t.clearBtn
-              onClick: @clear
-              "Clear completed (#{completions})"
-
-class Todo extends Component
-  render: ->
-    theme.apply (t) ->
-      t.wrapper ->
-        t.app ->
-          t.header 'todos'
-          t.com Input
-          t.com EntryList
-          t.com Footer
-        t.info ->
-          t.infoLine 'Double-click to edit a todo'
-          t.infoLine ->
-            t.build 'span', 'Written by '
-            t.infoLink href: 'https://github.com/forrestc', 'Forrest Cao'
-          t.infoLine ->
-            t.build 'span', 'Not yet part of '
-            t.infoLink href: 'http://todomvc.com', 'TodoMVC'
+Todo = Component ->
+  theme.apply (t) ->
+    t.wrapper ->
+      t.app ->
+        t.header 'todos'
+        t.com Input
+        t.com EntryList
+        t.com Footer
+      t.info ->
+        t.infoLine 'Double-click to edit a todo'
+        t.infoLine ->
+          t.build 'span', 'Written by '
+          t.infoLink href: 'https://github.com/forrestc', 'Forrest Cao'
+        t.infoLine ->
+          t.build 'span', 'Not yet part of '
+          t.infoLink href: 'http://todomvc.com', 'TodoMVC'
 
 export default Todo

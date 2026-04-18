@@ -100,36 +100,36 @@ TodoStore = class TodoStore extends Store {
 export var $ = new TodoStore();
 
 // Components
-Input = class Input extends Component {
-  updateField(input) {
+Input = Component(function() {
+  var add, updateField;
+  updateField = function(input) {
     return $.input = input;
-  }
-
-  add() {
-    var entry;
-    entry = new Entry({
+  };
+  add = function() {
+    $.entries.push(new Entry({
       description: $.input
-    });
-    $.entries.push(entry);
+    }));
     return $.input = '';
-  }
-
-  render() {
-    return theme.apply((t) => {
-      return t.newTodo({
-        placeholder: 'What needs to be done?',
-        value: $.input,
-        name: 'newTodo',
-        onInput: this.updateField,
-        onEnter: this.add
-      });
+  };
+  return theme.apply(function(t) {
+    return t.newTodo({
+      placeholder: 'What needs to be done?',
+      value: $.input,
+      name: 'newTodo',
+      onInput: updateField,
+      onEnter: add
     });
-  }
+  });
+});
 
-};
-
-EntryList = class EntryList extends Component {
-  checkAll() {
+EntryList = Component(function() {
+  var _entry, check, checkAll, deleteEntry, edit, update;
+  _entry = function(id) {
+    return find($.entries, {
+      id: id
+    });
+  };
+  checkAll = function() {
     var entry, i, len, ref, results;
     ref = $.entries;
     results = [];
@@ -138,164 +138,143 @@ EntryList = class EntryList extends Component {
       results.push(entry.completed = true);
     }
     return results;
-  }
-
-  _entry(id) {
-    return find($.entries, {
-      id: id
-    });
-  }
-
-  check(id) {
+  };
+  check = function(id) {
     var entry;
-    entry = this._entry(id);
+    entry = _entry(id);
     return entry.completed = !entry.completed;
-  }
-
-  edit(id, isEditing = true) {
+  };
+  edit = function(id, isEditing = true) {
     var entry;
-    entry = this._entry(id);
+    entry = _entry(id);
     return entry.editing = isEditing;
-  }
-
-  update(id, text) {
-    return this._entry(id).description = text;
-  }
-
-  delete(id) {
+  };
+  update = function(id, text) {
+    return _entry(id).description = text;
+  };
+  deleteEntry = function(id) {
     return remove($.entries, function(entry) {
       return entry.id === id;
     });
-  }
-
-  render() {
-    return theme.apply((t) => {
-      return t.with('main', {
-        empty: isEmpty($.entries)
-      })(() => {
-        t.toggle({
-          name: 'toggle',
-          checked: every($.entries, 'completed'),
-          onChange: this.checkAll
-        });
-        t.toggleLabel({
-          for: 'toggle'
-        }, 'Mark all as complete');
-        return t.list(() => {
-          return $.visibleEntries.forEach((entry) => {
-            return t.with('task', pick(entry, 'editing'))(() => {
-              if (entry.editing) {
-                return t.taskEdit({
-                  value: entry.description,
-                  id: entry.id,
-                  onInput: (text) => {
-                    return this.update(entry.id, text);
-                  },
-                  onBlur: () => {
-                    return this.edit(entry.id, false);
-                  },
-                  onEnter: () => {
-                    return this.edit(entry.id, false);
-                  }
-                });
-              } else {
-                t.taskToggle({
-                  checked: entry.completed,
-                  onChange: () => {
-                    return this.check(entry.id);
-                  }
-                });
-                t.with('entryLabel', pick(entry, 'completed'))({
-                  onDoubleClick: () => {
-                    return this.edit(entry.id);
-                  }
-                }, entry.description);
-                return t.destroyBtn({
-                  onClick: () => {
-                    return this.delete(entry.id);
-                  }
-                });
-              }
-            });
-          });
-        });
+  };
+  return theme.apply(function(t) {
+    return t.with('main', {
+      empty: isEmpty($.entries)
+    })(function() {
+      t.toggle({
+        name: 'toggle',
+        checked: every($.entries, 'completed'),
+        onChange: checkAll
       });
-    });
-  }
-
-};
-
-Footer = class Footer extends Component {
-  changeVisibility(visibility) {
-    return $.visibility = visibility;
-  }
-
-  clear() {
-    return remove($.entries, 'completed');
-  }
-
-  render() {
-    return theme.apply((t) => {
-      if (!isEmpty($.entries)) {
-        return t.footer(() => {
-          var completions;
-          t.counter($.entriesLeft);
-          t.filters(() => {
-            return ['All', 'Active', 'Completed'].forEach((visibility) => {
-              var buttonOpts, current;
-              buttonOpts = {
-                onClick: () => {
-                  return this.changeVisibility(visibility);
+      t.toggleLabel({
+        for: 'toggle'
+      }, 'Mark all as complete');
+      return t.list(function() {
+        return $.visibleEntries.forEach(function(entry) {
+          return t.with('task', pick(entry, 'editing'))(function() {
+            if (entry.editing) {
+              return t.taskEdit({
+                value: entry.description,
+                id: entry.id,
+                onInput: function(text) {
+                  return update(entry.id, text);
+                },
+                onBlur: function() {
+                  return edit(entry.id, false);
+                },
+                onEnter: function() {
+                  return edit(entry.id, false);
                 }
-              };
-              current = visibility === $.visibility;
-              return t.with('filter', {
-                current: current
-              })(buttonOpts, visibility);
-            });
-          });
-          completions = $.completedEntries.length;
-          if (completions > 0) {
-            return t.clearBtn({
-              onClick: this.clear
-            }, `Clear completed (${completions})`);
-          }
-        });
-      }
-    });
-  }
-
-};
-
-Todo = class Todo extends Component {
-  render() {
-    return theme.apply(function(t) {
-      return t.wrapper(function() {
-        t.app(function() {
-          t.header('todos');
-          t.com(Input);
-          t.com(EntryList);
-          return t.com(Footer);
-        });
-        return t.info(function() {
-          t.infoLine('Double-click to edit a todo');
-          t.infoLine(function() {
-            t.build('span', 'Written by ');
-            return t.infoLink({
-              href: 'https://github.com/forrestc'
-            }, 'Forrest Cao');
-          });
-          return t.infoLine(function() {
-            t.build('span', 'Not yet part of ');
-            return t.infoLink({
-              href: 'http://todomvc.com'
-            }, 'TodoMVC');
+              });
+            } else {
+              t.taskToggle({
+                checked: entry.completed,
+                onChange: function() {
+                  return check(entry.id);
+                }
+              });
+              t.with('entryLabel', pick(entry, 'completed'))({
+                onDoubleClick: function() {
+                  return edit(entry.id);
+                }
+              }, entry.description);
+              return t.destroyBtn({
+                onClick: function() {
+                  return deleteEntry(entry.id);
+                }
+              });
+            }
           });
         });
       });
     });
-  }
+  });
+});
 
-};
+Footer = Component(function() {
+  var changeVisibility, clear;
+  changeVisibility = function(visibility) {
+    return $.visibility = visibility;
+  };
+  clear = function() {
+    return remove($.entries, 'completed');
+  };
+  return theme.apply(function(t) {
+    if (!isEmpty($.entries)) {
+      return t.footer(function() {
+        var completions;
+        t.counter($.entriesLeft);
+        t.filters(function() {
+          return ['All', 'Active', 'Completed'].forEach(function(visibility) {
+            var current, opts;
+            opts = {
+              onClick: function() {
+                return changeVisibility(visibility);
+              }
+            };
+            current = visibility === $.visibility;
+            return t.with('filter', {
+              current: current
+            })(opts, visibility);
+          });
+        });
+        completions = $.completedEntries.length;
+        if (completions > 0) {
+          return t.clearBtn({
+            onClick: clear
+          }, `Clear completed (${completions})`);
+        }
+      });
+    }
+  });
+});
+
+Todo = Component(function() {
+  return theme.apply(function(t) {
+    return t.wrapper(function() {
+      t.app(function() {
+        t.header('todos');
+        t.com(Input);
+        t.com(EntryList);
+        return t.com(Footer);
+      });
+      return t.info(function() {
+        t.infoLine('Double-click to edit a todo');
+        t.infoLine(function() {
+          t.build('span', 'Written by ');
+          return t.infoLink({
+            href: 'https://github.com/forrestc'
+          }, 'Forrest Cao');
+        });
+        return t.infoLine(function() {
+          t.build('span', 'Not yet part of ');
+          return t.infoLink({
+            href: 'http://todomvc.com'
+          }, 'TodoMVC');
+        });
+      });
+    });
+  });
+});
 
 export default Todo;

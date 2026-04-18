@@ -1,9 +1,9 @@
 import {
-  action, computed, configure, extendObservable, observe, toJS,
+  action, configure, extendObservable, observe, toJS,
   isObservableArray
 } from 'mobx'
 
-import React, { Component as ReactComponent } from 'react';
+import React from 'react';
 import { observer } from 'mobx-react';
 import styled from 'styled-jss'
 import { capitalize, forEach, isObject, merge, omit } from 'lodash'
@@ -235,20 +235,4 @@ export class Theme {
   }
 }
 
-export class Component extends ReactComponent {
-  constructor(props) {
-    super(props)
-    // Apply observer to the concrete subclass on first instantiation.
-    // observer() mutates the class prototype in-place so all subsequent
-    // instances of the same subclass are already reactive.
-    const SubClass = this.constructor
-    if (!SubClass._mobxObserved && SubClass !== Component && SubClass.prototype.render) {
-      SubClass._mobxObserved = true
-      observer(SubClass)
-    }
-  }
-
-  initState(obj) {
-    this.state = new Store(obj)
-  }
-}
+export const Component = observer
