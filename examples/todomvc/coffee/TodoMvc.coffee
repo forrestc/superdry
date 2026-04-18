@@ -1,5 +1,5 @@
 import { every, find, filter, isEmpty, pick, remove } from 'lodash'
-import { Component, Store } from '../../../lib/superdry'
+import { Component, Store } from 'superdry'
 import theme from './theme'
 import api from './apiDriver'
 
@@ -35,7 +35,9 @@ class TodoStore extends Store
         when 1 then '1 item left'
 
   load: () ->
-    for obj in (await api.list())
+    entries = await api.list()
+    return unless entries
+    for obj in entries
       @entries.push new Entry(obj)
 
   onEntriesCreate: (entry) -> api.create(entry)
@@ -147,10 +149,10 @@ class Todo extends Component
         t.info ->
           t.infoLine 'Double-click to edit a todo'
           t.infoLine ->
-            t.span 'Written by '
+            t.build 'span', 'Written by '
             t.infoLink href: 'https://github.com/forrestc', 'Forrest Cao'
           t.infoLine ->
-            t.span 'Not yet part of '
+            t.build 'span', 'Not yet part of '
             t.infoLink href: 'http://todomvc.com', 'TodoMVC'
 
 export default Todo

@@ -1,12 +1,60 @@
 import {
-  action, computed, extendObservable, observe, toJS,
+  action, computed, configure, extendObservable, observe, toJS,
   isObservableArray
 } from 'mobx'
-import { Component as ReactComponent } from 'react';
+
+import React, { Component as ReactComponent } from 'react';
 import { observer } from 'mobx-react';
-import reactKup from 'react-kup';
 import styled from 'styled-jss'
 import { capitalize, forEach, isObject, merge, omit } from 'lodash'
+
+configure({ enforceActions: 'never' })
+
+function reactKup(callback) {
+  const stack = [[]]
+
+  const normalizeChildren = (inputs) => {
+    let outputs = []
+    inputs.forEach(input => {
+      if (React.isValidElement(input)) {
+        outputs.push(input)
+      } else if (typeof input === 'function') {
+        stack.unshift([])
+        input()
+        outputs = outputs.concat(stack.shift())
+      } else if (Array.isArray(input)) {
+        outputs = outputs.concat(normalizeChildren(input))
+      } else if (input != null && input !== false) {
+        outputs.push(input)
+      }
+    })
+    return outputs
+  }
+
+  const build = (type, config, ...children) => {
+    if (React.isValidElement(type)) {
+      stack[0].push(type)
+      return type
+    }
+    const isValidConfig = config !== null && typeof config === 'object' &&
+      !React.isValidElement(config) && !Array.isArray(config)
+    if (!isValidConfig) {
+      if (config !== undefined) children.unshift(config)
+      config = {}
+    }
+    const normalized = normalizeChildren(children)
+    const element = React.createElement(type, config, ...normalized)
+    stack[0].push(element)
+    return element
+  }
+
+  const kup = { build, element: () => stack[0][0] || null }
+  if (callback != null) {
+    callback(kup)
+    return kup.element()
+  }
+  return kup
+}
 
 export class Store {
   constructor(load) {
@@ -16,15 +64,24 @@ export class Store {
     }
 
     let observableAttrs = []
+    let extendObj = {}
+
     for (let attrName in obj) {
       let val = obj[attrName]
       if (typeof(val) === 'function') {
-        obj[attrName] = computed(val)
+        // MobX 5: use getter syntax for computed properties
+        const fn = val
+        Object.defineProperty(extendObj, attrName, {
+          get: fn,
+          enumerable: true,
+          configurable: true
+        })
       } else {
         observableAttrs.push(attrName)
+        extendObj[attrName] = val
       }
     }
-    const observable = extendObservable(this, obj)
+    const observable = extendObservable(this, extendObj)
 
     let loading = false
     if (typeof(this.load) === 'function') {
@@ -178,14 +235,20 @@ export class Theme {
   }
 }
 
-export const Component = observer(
-  class OC extends ReactComponent {
-    constructor(props) {
-      super(props)
-    }
-
-    initState(obj) {
-      this.state = new Store(obj)
+export class Component extends ReactComponent {
+  constructor(props) {
+    super(props)
+    // Apply observer to the concrete subclass on first instantiation.
+    // observer() mutates the class prototype in-place so all subsequent
+    // instances of the same subclass are already reactive.
+    const SubClass = this.constructor
+    if (!SubClass._mobxObserved && SubClass !== Component && SubClass.prototype.render) {
+      SubClass._mobxObserved = true
+      observer(SubClass)
     }
   }
-)
+
+  initState(obj) {
+    this.state = new Store(obj)
+  }
+}
