@@ -3,8 +3,6 @@ import { Component, Store } from 'superdry'
 import theme from './theme'
 import { client } from './app'
 
-console.log('client', client)
-
 # Stores
 
 class Entry extends Store
@@ -38,7 +36,6 @@ class TodoStore extends Store
 
   load: () ->
     entries = await client.list()
-    console.log('list'. entries)
     return unless entries
     for obj in entries
       @entries.push new Entry(obj)

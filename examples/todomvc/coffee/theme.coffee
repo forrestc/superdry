@@ -144,32 +144,34 @@ defaultTheme = new Theme
     extends:
       element: 'input'
       type: 'checkbox'
-    textAlign: 'center'
     width: 40
     height: 40
-    background: 'none'
     position: 'absolute'
     top: 0
     bottom: 0
     margin: 'auto 0'
     border: 'none'
     appearance: 'none'
-    '&:after':
-      content: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="-10 -18 100 135"><circle cx="50" cy="50" r="50" fill="none" stroke="#ededed" stroke-width="3"/></svg>\')'
-    '&:checked:after':
-      content: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="-10 -18 100 135"><circle cx="50" cy="50" r="50" fill="none" stroke="#bddad5" stroke-width="3"/><path fill="#5dc2af" d="M72 25L42 71 27 56l-4 4 20 20 34-52z"/></svg>\')'
+    background: 'none'
+    opacity: 0
+
   entryLabel:
     extends: 'label'
-    whiteSpace: 'pre-line'
+    color: '#484848'
     wordBreak: 'break-all'
-    padding: '15px 60px 15px 15px'
-    marginLeft: 45
+    padding: '15px 15px 15px 60px'
     display: 'block'
+    fontWeight: 400
     lineHeight: 1.2
     transition: 'color 0.4s'
+    backgroundImage: 'url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2240%22%20height%3D%2240%22%20viewBox%3D%22-10%20-18%20100%20135%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2250%22%20fill%3D%22none%22%20stroke%3D%22%23949494%22%20stroke-width%3D%223%22%2F%3E%3C%2Fsvg%3E")'
+    backgroundRepeat: 'no-repeat'
+    backgroundPosition: '0 center'
+
   'entryLabel.completed':
-    color: '#d9d9d9'
+    color: '#949494'
     textDecoration: 'line-through'
+    backgroundImage: 'url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2240%22%20height%3D%2240%22%20viewBox%3D%22-10%20-18%20100%20135%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2250%22%20fill%3D%22none%22%20stroke%3D%22%2359A193%22%20stroke-width%3D%223%22%2F%3E%3Cpath%20fill%3D%22%233EA390%22%20d%3D%22M72%2025L42%2071%2027%2056l-4%204%2020%2020%2034-52z%22%2F%3E%3C%2Fsvg%3E")'
 
   # footer
   footer:
