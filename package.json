@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "A super DRY javascript framework that integrates React, Mobx, and Coffeescript v2.",
   "main": "src/superdry.js",
+  "exports": {
+    "require": "./src/Api.js",
+    "import": "./src/superdry.js"
+  },
   "scripts": {
     "compile": "babel src --out-dir lib"
   },
@@ -26,14 +30,20 @@
     "@babel/cli": "^7.24.0",
     "@babel/core": "^7.24.0",
     "@babel/preset-env": "^7.24.0",
-    "@babel/preset-react": "^7.24.0"
+    "@babel/preset-react": "^7.24.0",
+    "babel-loader": "^9.1.3",
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.2.3"
   },
   "dependencies": {
     "lodash": "^4.17.21",
+    "cors": "^2.8.6",
+    "body-parser": "^1.20.0",
     "mobx": "^6.13.5",
     "mobx-react": "^7.6.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-"styled-jss": "^2.2.3"
+    "styled-jss": "^2.2.3"
   }
 }

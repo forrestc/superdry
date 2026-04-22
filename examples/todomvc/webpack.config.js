@@ -1,6 +1,7 @@
+require('coffeescript/register');
 var path = require('path');
 var { PORT } = require('./apiConfig');
-var setupRoutes = require('./apiRoutes');
+var { setupRoutes } = require('./js/app');
 
 module.exports = {
   mode: 'development',
@@ -24,6 +25,12 @@ module.exports = {
       setupRoutes(devServer.app);
       return middlewares;
     }
+  },
+  externals: ({ request }, callback) => {
+    if (request === 'cors' || request === 'body-parser') {
+      return callback(null, 'null');
+    }
+    callback();
   },
   resolve: {
     extensions: ['.js', '.jsx']

@@ -236,3 +236,5 @@ export class Theme {
 }
 
 export const Component = observer
+
+export { SuperDry } from './Api.js'

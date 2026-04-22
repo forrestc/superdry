@@ -1,7 +1,9 @@
 import { every, find, filter, isEmpty, pick, remove } from 'lodash'
 import { Component, Store } from 'superdry'
 import theme from './theme'
-import api from './apiDriver'
+import { client } from './app'
+
+console.log('client', client)
 
 # Stores
 
@@ -12,7 +14,7 @@ class Entry extends Store
     editing: false
     id: load?.id or Date.now()
 
-  onUpdate: -> api.patch(@id, @json()) unless @editing
+  onUpdate: -> client.update(@id, @json()) unless @editing
 
 class TodoStore extends Store
   setup: ->
@@ -35,13 +37,14 @@ class TodoStore extends Store
         when 1 then '1 item left'
 
   load: () ->
-    entries = await api.list()
+    entries = await client.list()
+    console.log('list'. entries)
     return unless entries
     for obj in entries
       @entries.push new Entry(obj)
 
-  onEntriesCreate: (entry) -> api.create(entry)
-  onEntriesDelete: (entry) -> api.delete(entry.id)
+  onEntriesCreate: (entry) -> client.create(entry)
+  onEntriesDelete: (entry) -> client.remove(entry.id)
 
 export $ = new TodoStore
 

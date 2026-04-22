@@ -17,7 +17,11 @@ import {
 
 import theme from './theme';
 
-import api from './apiDriver';
+import {
+  client
+} from './app';
+
+console.log('client', client);
 
 // Stores
 Entry = class Entry extends Store {
@@ -32,7 +36,7 @@ Entry = class Entry extends Store {
 
   onUpdate() {
     if (!this.editing) {
-      return api.patch(this.id, this.json());
+      return client.update(this.id, this.json());
     }
   }
 
@@ -75,7 +79,8 @@ TodoStore = class TodoStore extends Store {
 
   async load() {
     var entries, i, len, obj, results;
-    entries = (await api.list());
+    entries = (await client.list());
+    console.log('list'.entries);
     if (!entries) {
       return;
     }
@@ -88,11 +93,11 @@ TodoStore = class TodoStore extends Store {
   }
 
   onEntriesCreate(entry) {
-    return api.create(entry);
+    return client.create(entry);
   }
 
   onEntriesDelete(entry) {
-    return api.delete(entry.id);
+    return client.remove(entry.id);
   }
 
 };
