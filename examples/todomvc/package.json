@@ -4,8 +4,7 @@
   "description": "A sample project of using superdry",
   "scripts": {
     "compile": "coffee -o ./js -c ./coffee",
-    "start": "webpack serve",
-    "api": "coffee api.coffee"
+    "start": "webpack serve"
   },
   "repository": {
     "type": "git",
@@ -29,8 +28,10 @@
     "webpack-dev-server": "^5.2.3"
   },
   "dependencies": {
+    "body-parser": "^1.20.0",
     "coffeescript": "^2.7.0",
     "cors": "^2.8.6",
+    "express": "^4.18.0",
     "lodash": "^4.17.21",
     "superdry": "file:../.."
   }

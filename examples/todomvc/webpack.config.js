@@ -1,4 +1,6 @@
 var path = require('path');
+var { PORT } = require('./apiConfig');
+var setupRoutes = require('./apiRoutes');
 
 module.exports = {
   mode: 'development',
@@ -10,14 +12,18 @@ module.exports = {
     publicPath: '/static/'
   },
   devServer: {
-    port: 3001,
+    port: PORT,
     host: '127.0.0.1',
     static: {
       directory: __dirname,
       publicPath: '/'
     },
     hot: false,
-    liveReload: true
+    liveReload: true,
+    setupMiddlewares: (middlewares, devServer) => {
+      setupRoutes(devServer.app);
+      return middlewares;
+    }
   },
   resolve: {
     extensions: ['.js', '.jsx']
