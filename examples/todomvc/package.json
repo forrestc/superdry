@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "coffeescript": "^2.7.0",
+    "cors": "^2.8.6",
     "lodash": "^4.17.21",
     "superdry": "file:../.."
   }

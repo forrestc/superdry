@@ -1,5 +1,5 @@
 class ApiDriver
-  HOST = 'http://127.0.0.1:3000'
+  HOST = 'http://127.0.0.1:3002'
 
   list: -> @request('GET', '/entries')
   create: (obj) -> @request('POST', '/entries', obj)

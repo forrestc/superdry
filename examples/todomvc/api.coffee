@@ -30,4 +30,6 @@ app.post '/entries', (req, res) ->
   entries[id] = omit req.body, 'id'
   res.json { status: 'ok' }
 
-app.listen 3000
+port = 3002
+app.listen port
+console.log "listening at port #{port}"
